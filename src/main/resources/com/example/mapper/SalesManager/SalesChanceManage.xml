@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.SalesManager.SalesChanceManage">
+
+    <select id="selectSalesChanceByNameOrContactPerson" resultType="com.example.com.example.entity.SalChance">
+        SELECT * FROM sal_chance
+                 WHERE sal_chance.chc_cust_name LIKE CONCAT('%', #{name}, '%')
+                    OR
+                     sal_chance.chc_linkman LIKE CONCAT('%', #{contactPerson}, '%')
+        <if test="name != null and contactPerson != null">
+            AND sal_chance.chc_create_by = #{name}
+            OR sal_chance.chc_linkman = #{contactPerson}
+        </if>
+    </select>
+
+    <insert id="insertSalesChance" parameterType="com.example.com.example.entity.SalChance">
+        INSERT INTO sal_chance (chc_cust_name,
+                                chc_source,
+                                chc_rate,
+                                chc_linkman,
+                                chc_tel,
+                                chc_title,
+                                chc_desc,
+                                chc_create_by,
+                                chc_create_date)
+        VALUES (#{chcCustName}, #{chcSource}, #{chcRate}, #{chcLinkman}, #{chcTel}, #{chcTitle}, #{chcDesc}, #{chcCreateBy}, #{chcCreateDate})
+    </insert>
+
+    <update id="editSalesChance" parameterType="com.example.com.example.entity.SalChance">
+        update sal_chance set chc_source = #{chcSource},
+                              chc_rate = #{chcRate},
+                              chc_linkman = #{chcLinkman},
+                              chc_tel = #{chcTel},
+                              chc_title = #{chcTitle},
+                              chc_desc = #{chcDesc},
+                              chc_cust_name=#{chcCustName}
+        where chc_id = #{id}
+    </update>
+
+    <delete id="deleteSalesChance" parameterType="com.example.com.example.entity.SalChance">
+        delete from sal_chance where chc_id = #{id}
+    </delete>
+</mapper>
