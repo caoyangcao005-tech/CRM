@@ -1,0 +1,106 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <link href="../css/style1.css" rel="stylesheet" type="text/css" />
+    <link href="../css/style2.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div id="desDiv">
+        <span>数据字典管理</span><br />
+        管理系统所需的数据字典内容
+    </div>
+    <table class="tableEdit">
+        <tr>
+            <th>
+                类别：
+            </th>
+            <td>
+                <input type="text" />
+            </td>
+            <th>
+                条目：
+            </th>
+            <td>
+                <input type="text" />
+            </td>
+            <th>
+                值：
+            </th>
+            <td>
+                <input type="text" />
+            </td>
+        </tr>
+        <tfoot>
+            <tr>
+                <td colspan="8">
+                    <input type="button" value="查询" />
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+    <div id="dataDiv">
+        <div id="headDiv">
+            <img src="../images/22.gif" />&nbsp;&nbsp;<a href="DataAdd.html?1=1">新建</a>
+        </div>
+        <table class="dataTable">
+            <tr>
+                <th>类别</th>
+                <th>条目</th>
+                <th>值</th>
+                <th>是否可编辑</th>
+                <th>操作</th>
+            </tr>
+            <tr>
+                <td>企业客户等级</td>
+                <td>战略合作伙伴</td>
+                <td>1</td>
+                <td>否</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>企业客户等级</td>
+                <td>合作伙伴</td>
+                <td>2</td>
+                <td>否</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>企业客户等级</td>
+                <td>大客户</td>
+                <td>3</td>
+                <td>否</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>企业客户等级</td>
+                <td>普通客户</td>
+                <td>5</td>
+                <td>否</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>服务类型</td>
+                <td>咨询</td>
+                <td>咨询</td>
+                <td>是</td>
+                <td>
+                    <a href="dataEdit.html?"><img src="../images/33.gif" title="编辑" style="border:0px" /></a>
+                    <img src="../images/bt_del.gif" title="删除" style="border:0px" />
+                </td>
+            </tr>
+            <tr>
+                <td>服务类型</td>
+                <td>投诉</td>
+                <td>投诉</td>
+                <td>是</td>
+                <td>
+                    <a href="dataEdit.html?"><img src="../images/33.gif" title="编辑" style="border:0px" /></a>
+                    <img src="../images/bt_del.gif" title="删除" style="border:0px" />
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>
