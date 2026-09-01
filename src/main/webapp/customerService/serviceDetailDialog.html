@@ -1,95 +1,40 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" >
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
-    <title></title>
-    <link href="../css/style2.css" rel="stylesheet" type="text/css" />
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>客户服务单</title><link rel="stylesheet" href="../css/service-management.css">
+    <style>
+        @media print {
+            body { padding: 0; background: #fff; }
+            .page-header { color: #000; background: #fff; border: 1px solid #999; }
+            .no-print { display: none !important; }
+            .panel { border: 0; box-shadow: none; }
+        }
+    </style>
 </head>
 <body>
-<table class="tableEdit" style="width:500px;">
-        <thead>
-            <tr>
-                <td colspan="4">服务信息</td>
-            </tr>
-        </thead>
-        <tr>
-            <th>客户姓名：</th>
-            <td> AA公司</td>
-            <th>服务类型：</th>
-            <td>
-                投诉
-            </td>
-        </tr>
-        <tr>
-            <th>服务概要：</th>
-            <td colspan="3">
-               质量问题
-             </td>
-        </tr>
-        <tr>
-            <th>详细信息：</th>
-            <td colspan="3">
-                购买的商品出现质量问题
-             </td>
-        </tr>
-    <tr>
-        <th>创建人：</th>
-        <td>
-            张三
-        </td>
-        <th>创建时间：</th>
-        <td>
-            2016-1-1
-        </td>
-    </tr>
-    </table>
- <table class="tableEdit" style="width:500px;">
-        <thead>
-            <tr>
-                <td colspan="4">服务处理</td>
-            </tr>
-        </thead>
-        <tr>
-            <th>服务处理：</th>
-            <td colspan="3">
-                已派维护人员前往调查并解决问题
-             </td>
-        </tr>
-     <tr>
-         <th>处理人：</th>
-         <td>
-             张三
-         </td>
-         <th>处理时间：</th>
-         <td>
-             2016-1-1
-         </td>
-     </tr>
-    </table>
-    <table class="tableEdit" style="width:500px;">
-        <thead>
-            <tr>
-                <td colspan="4">服务反馈</td>
-            </tr>
-        </thead>
-        <tr>
-            <th>满意度：</th>
-            <td>
-                ☆☆☆☆☆
-            </td>
-        </tr>
-        <tr>
-            <th>处理结果：</th>
-            <td>
-                已将有问题产品进行维修，不能维修的进行了换货处理
-             </td>
-        </tr>
-        <tfoot>
-            <tr>
-                <td colspan="4">
-                     <input type="button" value="返回"/>
-                </td>
-            </tr>
-        </tfoot>
-    </table>
+<main class="page">
+    <header class="page-header"><h1>客户服务单</h1><p>客户关系管理系统 · 服务归档记录</p></header>
+    <div id="message" class="message no-print"></div>
+    <section class="panel"><h2 class="panel-title">完整服务信息</h2><div id="detail" class="detail-grid"><div class="empty">正在加载...</div></div>
+        <div class="actions no-print"><button type="button" class="secondary" onclick="history.back()">返回</button><button id="printButton" type="button" onclick="window.print()" disabled>打印 / 输出服务单</button></div>
+    </section>
+</main>
+<script src="../js/service-common.js"></script>
+<script>
+(function () {
+    var id = ServiceApp.queryId();
+    if (!id) { ServiceApp.message('服务编号无效', false); return; }
+    ServiceApp.api('/' + id).then(function (response) {
+        if (response.data.svrStatus !== '已归档') {
+            ServiceApp.message('该服务尚未归档', false);
+            return;
+        }
+        document.title = '客户服务单-' + response.data.svrId;
+        document.getElementById('detail').innerHTML = ServiceApp.detailHtml(response.data);
+        document.getElementById('printButton').disabled = false;
+    }).catch(function (error) { ServiceApp.message(error.message, false); });
+}());
+</script>
 </body>
 </html>

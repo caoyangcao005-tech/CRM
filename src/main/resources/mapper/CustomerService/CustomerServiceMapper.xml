@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.CustomerService.CustomerServiceMapper">
+    <resultMap id="serviceMap" type="com.example.entity.CstService">
+        <id property="svrId" column="svr_id"/>
+        <result property="svrType" column="svr_type"/>
+        <result property="svrTitle" column="svr_title"/>
+        <result property="svrCustNo" column="svr_cust_no"/>
+        <result property="svrCustName" column="svr_cust_name"/>
+        <result property="svrStatus" column="svr_status"/>
+        <result property="svrRequest" column="svr_request"/>
+        <result property="svrCreateId" column="svr_create_id"/>
+        <result property="svrCreateBy" column="svr_create_by"/>
+        <result property="svrCreateDate" column="svr_create_date"/>
+        <result property="svrDueId" column="svr_due_id"/>
+        <result property="svrDueTo" column="svr_due_to"/>
+        <result property="svrDueDate" column="svr_due_date"/>
+        <result property="svrDeal" column="svr_deal"/>
+        <result property="svrDealId" column="svr_deal_id"/>
+        <result property="svrDealBy" column="svr_deal_by"/>
+        <result property="svrDealDate" column="svr_deal_date"/>
+        <result property="svrResult" column="svr_result"/>
+        <result property="svrSatisfy" column="svr_satisfy"/>
+    </resultMap>
+
+    <sql id="serviceColumns">
+        svr_id, svr_type, svr_title, svr_cust_no, svr_cust_name, svr_status,
+        svr_request, svr_create_id, svr_create_by, svr_create_date,
+        svr_due_id, svr_due_to, svr_due_date, svr_deal, svr_deal_id,
+        svr_deal_by, svr_deal_date, svr_result, svr_satisfy
+    </sql>
+
+    <sql id="serviceFilters">
+        <where>
+            <if test="customerName != null">
+                AND svr_cust_name LIKE CONCAT('%', #{customerName}, '%')
+            </if>
+            <if test="title != null">
+                AND svr_title LIKE CONCAT('%', #{title}, '%')
+            </if>
+            <if test="type != null">AND svr_type = #{type}</if>
+            <if test="status != null">AND svr_status = #{status}</if>
+            <if test="startDate != null">
+                AND svr_create_date &gt;= CONCAT(#{startDate}, ' 00:00:00')
+            </if>
+            <if test="endDate != null">
+                AND svr_create_date &lt; DATE_ADD(#{endDate}, INTERVAL 1 DAY)
+            </if>
+            <if test="dueUserId != null">AND svr_due_id = #{dueUserId}</if>
+        </where>
+    </sql>
+
+    <select id="findServices" parameterType="dto.ServiceQuery" resultMap="serviceMap">
+        SELECT <include refid="serviceColumns"/> FROM cst_service
+        <include refid="serviceFilters"/>
+        ORDER BY svr_create_date DESC, svr_id DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="countServices" parameterType="dto.ServiceQuery" resultType="long">
+        SELECT COUNT(*) FROM cst_service
+        <include refid="serviceFilters"/>
+    </select>
+
+    <select id="findById" resultMap="serviceMap">
+        SELECT <include refid="serviceColumns"/> FROM cst_service WHERE svr_id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.example.entity.CstService" useGeneratedKeys="true" keyProperty="svrId">
+        INSERT INTO cst_service
+        (svr_type, svr_title, svr_cust_no, svr_cust_name, svr_status,
+         svr_request, svr_create_id, svr_create_by, svr_create_date)
+        VALUES
+        (#{svrType}, #{svrTitle}, #{svrCustNo}, #{svrCustName}, #{svrStatus},
+         #{svrRequest}, #{svrCreateId}, #{svrCreateBy}, #{svrCreateDate})
+    </insert>
+
+    <update id="allot">
+        UPDATE cst_service
+        SET svr_due_id = #{userId}, svr_due_to = #{userName},
+            svr_due_date = NOW(), svr_status = '已分配'
+        WHERE svr_id = #{id} AND svr_status = '新创建'
+    </update>
+
+    <update id="deal">
+        UPDATE cst_service
+        SET svr_deal = #{deal}, svr_deal_id = #{dealId}, svr_deal_by = #{dealBy},
+            svr_deal_date = NOW(), svr_result = NULL, svr_satisfy = NULL,
+            svr_status = '已处理'
+        WHERE svr_id = #{id} AND svr_status = '已分配'
+    </update>
+
+    <update id="feedback">
+        UPDATE cst_service
+        SET svr_result = #{result}, svr_satisfy = #{satisfy}, svr_status = #{nextStatus}
+        WHERE svr_id = #{id} AND svr_status = '已处理'
+    </update>
+
+    <delete id="deleteNew">
+        DELETE FROM cst_service WHERE svr_id = #{id} AND svr_status = '新创建'
+    </delete>
+
+    <select id="findServiceTypes" resultType="string">
+        SELECT DISTINCT dict_item FROM bas_dict
+        WHERE dict_type IN ('服务类型', '客户服务类型') ORDER BY dict_id
+    </select>
+
+    <select id="findCustomers" resultType="com.example.entity.CstCustomer">
+        SELECT cust_no, cust_name, cust_region, cust_manager_id, cust_manager_name,
+               cust_level, cust_satisfy, cust_credit, cust_addr, cust_zip,
+               cust_tel, cust_fax, cust_website, cust_licence_no, cust_chieftain,
+               cust_bankroll, cust_turnover, cust_bank, cust_bank_account,
+               cust_local_tax_no, cust_national_tax_no, cust_status
+        FROM cst_customer
+        WHERE (cust_status IS NULL OR cust_status IN ('1', '正常'))
+        <if test="keyword != null">
+            AND cust_name LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        ORDER BY cust_name LIMIT 100
+    </select>
+
+    <select id="findActiveUsers" resultType="com.example.entity.SysUser">
+        SELECT user_id, user_name, user_password, user_role_id, user_flag
+        FROM sys_user WHERE user_flag = 1 ORDER BY user_id
+    </select>
+</mapper>

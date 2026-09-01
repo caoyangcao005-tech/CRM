@@ -1,104 +1,47 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" >
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
-    <title></title>
-    <link href="../css/style2.css" rel="stylesheet" type="text/css" />
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>客户服务反馈</title><link rel="stylesheet" href="../css/service-management.css">
 </head>
 <body>
-<table class="tableEdit" style="width:500px;">
-        <thead>
-            <tr>
-                <td colspan="4">服务信息（状态：已分配）</td>
-            </tr>
-        </thead>
-        <tr>
-            <th>客户名称：</th>
-            <td>
-               AA公司</td>
-            <th>服务类型：</th>
-            <td>
-                投诉
-            </td>
-        </tr>
-        
-        <tr>
-            <th>服务概要：</th>
-            <td colspan="3">
-               质量问题
-             </td>
-        </tr>
-        <tr>
-            <th>详细信息：</th>
-            <td colspan="3">
-                购买的商品出现质量问题
-             </td>
-        </tr>
-    <tr>
-        <th>创建人：</th>
-        <td>
-            张三
-        </td>
-        <th>创建时候：</th>
-        <td>
-            2016-1-1
-        </td>
-    </tr>
-    </table>
- <table class="tableEdit" style="width:500px;">
-        <thead>
-            <tr>
-                <td colspan="4">服务处理</td>
-            </tr>
-        </thead>
-        <tr>
-            <th>服务处理：</th>
-            <td colspan="3">
-                已派维护人员前往调查并解决问题
-             </td>
-        </tr>
-     <tr>
-         <th>处理人：</th>
-         <td>
-             张三
-         </td>
-         <th>处理时间：</th>
-         <td>
-             2016-1-1
-         </td>
-     </tr>
-    </table>
-    <table class="tableEdit" style="width:500px;">
-        <thead>
-            <tr>
-                <td colspan="4">服务反馈</td>
-            </tr>
-        </thead>
-        <tr>
-            <th>满意度：</th>
-            <td>
-                <select>
-                    <option>☆</option>
-                    <option>☆☆</option>
-                    <option>☆☆☆</option>
-                    <option>☆☆☆☆</option>
-                    <option>☆☆☆☆☆</option>
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <th>处理结果：</th>
-            <td>
-                <textarea></textarea>
-             </td>
-        </tr>
-        <tfoot>
-            <tr>
-                <td colspan="4">
-                     <input type="button" value="确定" />&nbsp;&nbsp;
-                     <input type="button" value="关闭" onclick="window.close()" />
-                </td>
-            </tr>
-        </tfoot>
-    </table>
+<main class="page">
+    <header class="page-header"><h1>客户服务反馈</h1><p>满意度 3～5 分将完成归档，1～2 分将返回“已分配”状态重新处理。</p></header>
+    <div id="message" class="message"></div>
+    <section class="panel"><h2 class="panel-title">服务及处理信息</h2><div id="detail" class="detail-grid"><div class="empty">正在加载...</div></div></section>
+    <section class="panel"><h2 class="panel-title">服务反馈</h2>
+        <form id="feedbackForm"><div class="form-grid">
+            <div class="field"><label class="required" for="satisfy">满意度</label><select id="satisfy" required><option value="">请选择</option><option value="1">1 分（非常不满意）</option><option value="2">2 分（不满意）</option><option value="3">3 分（一般）</option><option value="4">4 分（满意）</option><option value="5">5 分（非常满意）</option></select></div>
+            <div class="field span-4"><label class="required" for="result">处理结果</label><textarea id="result" maxlength="500" required placeholder="请填写客户确认后的处理结果"></textarea></div>
+        </div><div class="actions"><button type="button" class="secondary" onclick="history.back()">返回</button><button id="submitButton" type="submit">提交反馈</button></div></form>
+    </section>
+</main>
+<script src="../js/service-common.js"></script>
+<script>
+(function () {
+    var id = ServiceApp.queryId();
+    if (!id) { ServiceApp.message('服务编号无效', false); document.getElementById('submitButton').disabled = true; return; }
+    ServiceApp.api('/' + id).then(function (response) {
+        document.getElementById('detail').innerHTML = ServiceApp.detailHtml(response.data);
+        if (response.data.svrStatus !== '已处理') {
+            document.getElementById('submitButton').disabled = true;
+            ServiceApp.message('当前服务不是“已处理”状态，不能反馈', false);
+        }
+    }).catch(function (error) { ServiceApp.message(error.message, false); });
+
+    document.getElementById('feedbackForm').addEventListener('submit', async function (event) {
+        event.preventDefault();
+        var satisfy = Number(ServiceApp.value('satisfy'));
+        if (!satisfy) { ServiceApp.message('请选择满意度', false); return; }
+        var button = document.getElementById('submitButton'); button.disabled = true;
+        try {
+            var response = await ServiceApp.api('/' + id + '/feedback', {method: 'PUT', body: JSON.stringify({result: ServiceApp.value('result'), satisfy: satisfy})});
+            ServiceApp.message(response.message, true);
+            document.getElementById('detail').innerHTML = ServiceApp.detailHtml(response.data);
+            window.setTimeout(function () { window.location.href = 'serviceResult.html'; }, 1200);
+        } catch (error) { ServiceApp.message(error.message, false); button.disabled = false; }
+    });
+}());
+</script>
 </body>
 </html>

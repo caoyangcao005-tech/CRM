@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class SalesChanceController {
     @RequestMapping("/salesChanceManager")
     public String salesChanceManager() {
-
+        return "sale/saleChance";
     }
 
 }

@@ -1,53 +1,94 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" >
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
-    <title></title>
-    <link href="../css/style2.css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript">
-        function showCustomer() {
-            var returnValue = window.showModalDialog("../publicPage/SelectCustomer.html?data=" + Math.random(), "参数", "dialogWidth:400px;dialogHeight:220px;help:no");
-        }
-    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>服务创建</title>
+    <link rel="stylesheet" href="../css/service-management.css">
 </head>
 <body>
-<table class="tableEdit" style="width:600px;">
-        <thead>
-            <tr>
-                <td colspan="4">创建服务</td>
-            </tr>
-        </thead>
-        <tr>
-            <th>客户姓名：</th>
-            <td>
-                <input type="text" ondblclick="showCustomer()" /></td>
-            <th>服务类型：</th>
-            <td>
-                <select style="width:100px">
-                    <option>咨询</option>
-                    <option>投诉</option>
-                    <option>建议</option>
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <th>服务概要：</th>
-            <td colspan="3">
-                <input type="text"  style="width:300px"/>
-             </td>
-        </tr>
-        <tr>
-            <th>详细信息：</th>
-            <td colspan="3">
-                <textarea></textarea>
-             </td>
-        </tr>
-        <tfoot>
-            <tr>
-                <td colspan="4">
-                    <input type="button" value="确定" />&nbsp;&nbsp;
-                </td>
-            </tr>
-        </tfoot>
-    </table>
+<main class="page">
+    <header class="page-header">
+        <h1>服务创建</h1>
+        <p>登记客户的咨询、投诉或建议；编号、创建人、创建时间和“新创建”状态由系统自动记录。</p>
+    </header>
+    <div id="message" class="message"></div>
+    <section class="panel">
+        <h2 class="panel-title">新建客户服务</h2>
+        <form id="createForm">
+            <div class="form-grid">
+                <div class="field span-2">
+                    <label class="required" for="customer">客户名称</label>
+                    <select id="customer" required><option value="">正在加载客户...</option></select>
+                </div>
+                <div class="field span-2">
+                    <label class="required" for="type">服务类型</label>
+                    <select id="type" required><option value="">正在加载类型...</option></select>
+                </div>
+                <div class="field span-4">
+                    <label class="required" for="title">服务概要</label>
+                    <input id="title" maxlength="500" required placeholder="请简要描述客户服务事项">
+                </div>
+                <div class="field span-4">
+                    <label class="required" for="request">服务请求</label>
+                    <textarea id="request" maxlength="3000" required placeholder="请填写客户提出的具体问题或要求"></textarea>
+                </div>
+            </div>
+            <p id="creatorHint" class="muted">创建人和创建时间将在提交时自动记录。</p>
+            <div class="actions"><button id="submitButton" type="submit">创建服务</button></div>
+        </form>
+    </section>
+</main>
+<script src="../js/service-common.js"></script>
+<script>
+(function () {
+    var metadata;
+    async function loadMetadata() {
+        try {
+            metadata = (await ServiceApp.api('/metadata')).data;
+            ServiceApp.setOptions(document.getElementById('customer'), metadata.customers, '请选择客户',
+                function (item) { return item.custNo; }, function (item) { return item.custName; });
+            ServiceApp.setOptions(document.getElementById('type'), metadata.serviceTypes, '请选择服务类型');
+            if (metadata.currentUser) {
+                document.getElementById('creatorHint').textContent =
+                    '当前创建人：' + metadata.currentUser.userName + '；创建时间和状态由系统自动记录。';
+            }
+        } catch (error) {
+            ServiceApp.message(error.message, false);
+        }
+    }
+
+    document.getElementById('createForm').addEventListener('submit', async function (event) {
+        event.preventDefault();
+        var customerSelect = document.getElementById('customer');
+        var selected = customerSelect.options[customerSelect.selectedIndex];
+        if (!selected || !customerSelect.value) {
+            ServiceApp.message('请选择客户', false);
+            return;
+        }
+        var button = document.getElementById('submitButton');
+        button.disabled = true;
+        try {
+            var response = await ServiceApp.api('', {
+                method: 'POST',
+                body: JSON.stringify({
+                    customerNo: customerSelect.value,
+                    customerName: selected.textContent,
+                    type: ServiceApp.value('type'),
+                    title: ServiceApp.value('title'),
+                    request: ServiceApp.value('request')
+                })
+            });
+            ServiceApp.message(response.message + '，服务编号：' + response.data.svrId, true);
+            event.target.reset();
+        } catch (error) {
+            ServiceApp.message(error.message, false);
+        } finally {
+            button.disabled = false;
+        }
+    });
+    loadMetadata();
+}());
+</script>
 </body>
 </html>

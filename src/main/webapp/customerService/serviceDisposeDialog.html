@@ -1,78 +1,44 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" >
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
-    <title></title>
-    <link href="../css/style2.css" rel="stylesheet" type="text/css" />
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>处理客户服务</title><link rel="stylesheet" href="../css/service-management.css">
 </head>
-
 <body>
-<table class="tableEdit" style="width:500px;">
-        <thead>
-            <tr>
-                <td colspan="4">服务信息（状态：已分配）</td>
-            </tr>
-        </thead>
-        <tr>
-            <th>客户名称：</th>
-            <td>AA公司</td>
-            <th>服务类型：</th>
-            <td>
-                投诉
-            </td>
-        </tr>
-        <tr>
-            <th>服务概要：</th>
-            <td colspan="3">
-               质量问题
-             </td>
-        </tr>
-        <tr>
-            <th>详细信息：</th>
-            <td colspan="3">
-                购买的商品出现质量问题
-             </td>
-        </tr>
-    <tr>
-        <th>创建人：</th>
-        <td>
-            张三
-        </td>
-        <th>创建时间：</th>
-        <td>
-            2016-1-1
-        </td>
-    </tr>
-    <tr>
-        <th>分配人：</th>
-        <td>
-            张三
-        </td>
-        <th>分配时间：</th>
-        <td>
-            2016-1-1
-        </td>
-    </tr>
-    </table>
- <table class="tableEdit" style="width:500px;">
-        <thead>
-            <tr>
-                <td colspan="4">服务处理</td>
-            </tr>
-        </thead>
-        <tr>
-            <th>服务处理：</th>
-            <td colspan="3">
-               <textarea></textarea>
-             </td>
-        </tr>
-         <tfoot>
-            <tr>
-                <td colspan="4">
-                     <input type="button" value="确定" />&nbsp;&nbsp;
-                     <input type="button" value="返回"  />
-                </td>
-            </tr>
-        </tfoot>
-    </table>
+<main class="page">
+    <header class="page-header"><h1>处理客户服务</h1><p>填写处理方法后，服务状态将变为“已处理”。</p></header>
+    <div id="message" class="message"></div>
+    <section class="panel"><h2 class="panel-title">服务信息</h2><div id="detail" class="detail-grid"><div class="empty">正在加载...</div></div></section>
+    <section class="panel"><h2 class="panel-title">服务处理</h2>
+        <form id="dealForm"><div class="field"><label class="required" for="deal">处理方法</label><textarea id="deal" maxlength="3000" required placeholder="请记录处理过程和处理方法"></textarea></div>
+            <div class="actions"><button type="button" class="secondary" onclick="history.back()">返回</button><button id="submitButton" type="submit">提交处理</button></div>
+        </form>
+    </section>
+</main>
+<script src="../js/service-common.js"></script>
+<script>
+(function () {
+    var id = ServiceApp.queryId();
+    if (!id) { ServiceApp.message('服务编号无效', false); document.getElementById('submitButton').disabled = true; return; }
+    ServiceApp.api('/' + id).then(function (response) {
+        document.getElementById('detail').innerHTML = ServiceApp.detailHtml(response.data);
+        if (response.data.svrStatus !== '已分配') {
+            document.getElementById('submitButton').disabled = true;
+            ServiceApp.message('当前服务不是“已分配”状态，不能处理', false);
+        }
+    }).catch(function (error) { ServiceApp.message(error.message, false); });
+
+    document.getElementById('dealForm').addEventListener('submit', async function (event) {
+        event.preventDefault();
+        var button = document.getElementById('submitButton'); button.disabled = true;
+        try {
+            var response = await ServiceApp.api('/' + id + '/deal', {method: 'PUT', body: JSON.stringify({deal: ServiceApp.value('deal')})});
+            ServiceApp.message(response.message, true);
+            document.getElementById('detail').innerHTML = ServiceApp.detailHtml(response.data);
+            window.setTimeout(function () { window.location.href = 'serviceDispose.html'; }, 900);
+        } catch (error) { ServiceApp.message(error.message, false); button.disabled = false; }
+    });
+}());
+</script>
 </body>
 </html>
