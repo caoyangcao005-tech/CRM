@@ -18,9 +18,11 @@
                                 chc_tel,
                                 chc_title,
                                 chc_desc,
+                                chc_create_id,
                                 chc_create_by,
-                                chc_create_date)
-        VALUES (#{chcCustName}, #{chcSource}, #{chcRate}, #{chcLinkman}, #{chcTel}, #{chcTitle}, #{chcDesc}, #{chcCreateBy}, #{chcCreateDate})
+                                chc_create_date,
+                                chc_status)
+        VALUES (#{chcCustName}, #{chcSource}, #{chcRate}, #{chcLinkman}, #{chcTel}, #{chcTitle}, #{chcDesc}, #{chcCreateId}, #{chcCreateBy}, #{chcCreateDate}, 1)
     </insert>
 
     <update id="editSalesChance">
@@ -38,4 +40,9 @@
     <delete id="deleteSalesChance" parameterType="int">
         DELETE FROM sal_chance WHERE chc_id = #{id}
     </delete>
+
+    <!-- 查询销售机会状态（1未指派 2已指派 3开发成功 4终止开发） -->
+    <select id="judgeSalesChanceStatus" resultType="int">
+        select sal_chance.chc_status from sal_chance where chc_id = #{id}
+    </select>
 </mapper>

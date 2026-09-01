@@ -19,4 +19,6 @@ public interface SalesChanceManage {
     //删除销售机会
     int deleteSalesChance(@Param("id") int id);
 
+    //判断是否分配销售机会
+    int judgeSalesChanceStatus(@Param("id") int id);
 }

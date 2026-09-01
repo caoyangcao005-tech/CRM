@@ -6,6 +6,7 @@ import com.example.mapper.SalesManager.SalesChanceManage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -22,6 +23,13 @@ public class SalChcManager implements SalChcManage {
 
     @Override
     public int insertSalChance(SalChance salChance) {
+        // 需求3.1.1：创建时间=当前系统时间，新机会状态默认"未指派(1)"
+        if (salChance.getChcCreateDate() == null) {
+            salChance.setChcCreateDate(new Date());
+        }
+        if (salChance.getChcStatus() == null) {
+            salChance.setChcStatus(1);
+        }
         return salesChanceManage.insertSalesChance(salChance);
     }
 
@@ -32,6 +40,15 @@ public class SalChcManager implements SalChcManage {
 
     @Override
     public int deleteSalChance(int id) {
-        return salesChanceManage.deleteSalesChance(id);
+        // 需求3.1.3：只有"未分配"状态(1)的销售机会才能删除
+        if (salesChanceManage.judgeSalesChanceStatus(id) == 1) {
+            return salesChanceManage.deleteSalesChance(id);
+        }
+        return -1; // 已分配或开发中的机会不可删除
+    }
+
+    @Override
+    public int judgeSalesChanceStatus(int id) {
+        return salesChanceManage.judgeSalesChanceStatus(id);
     }
 }
